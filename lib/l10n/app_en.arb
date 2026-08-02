@@ -1,0 +1,12 @@
+{
+  "@@locale": "en",
+  "appTitle": "baibars FleetCare",
+  "loginWelcome": "Welcome",
+  "loginSubtitle": "Maintenance and health tracking for your CT110 UAV",
+  "emailLabel": "Your email address",
+  "emailHint": "name@example.com",
+  "sendCodeButton": "Send sign-in code",
+  "emailInvalid": "Please enter a valid email address",
+  "loginComingSoon": "Sign-in will be available very soon.",
+  "brandTagline": "Çiftçinin Gökyüzündeki Dostu"
+}
