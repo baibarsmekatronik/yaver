@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>baibars FleetCare — sunucu bağlantı örneği</title>
+  <style>
+    :root {
+      --baibars-blue: #1F4788;
+      --deep-green: #1B4D3E;
+      --lime: #B5D334;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 24px; background: #f5f6f4;
+      font-family: system-ui, -apple-system, sans-serif; color: #16211c;
+    }
+    h1 { color: var(--deep-green); font-size: 1.4rem; }
+    .card {
+      background: #fff; border-radius: 16px; padding: 20px;
+      max-width: 420px; margin: 0 auto 16px;
+      box-shadow: 0 2px 8px rgba(27, 77, 62, 0.08);
+    }
+    .serial { font-family: ui-monospace, monospace; color: var(--baibars-blue); font-weight: 700; }
+    .counters { display: flex; gap: 16px; margin: 12px 0; }
+    .counter { flex: 1; background: #eef3ec; border-radius: 12px; padding: 12px; text-align: center; }
+    .counter b { display: block; font-size: 1.6rem; color: var(--deep-green); }
+    button {
+      width: 100%; min-height: 56px; border: 0; border-radius: 14px;
+      background: var(--baibars-blue); color: #fff; font-size: 1.05rem; font-weight: 700;
+      cursor: pointer;
+    }
+    button:active { background: var(--deep-green); }
+    #durum { margin-top: 12px; font-size: 0.95rem; min-height: 1.4em; }
+    #durum.ok { color: var(--deep-green); }
+    #durum.hata { color: #a03030; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>CT110 — sorti kaydı örneği</h1>
+    <p>Seri no: <span class="serial" id="seri">yükleniyor…</span></p>
+    <div class="counters">
+      <div class="counter"><b id="sorti">–</b>toplam sorti</div>
+      <div class="counter"><b id="saat">–</b>uçuş saati</div>
+    </div>
+    <button id="kaydet">Sortiyi kaydet (11 dk, 20 da)</button>
+    <div id="durum"></div>
+  </div>
+
+  <script src="fleetcare-api.js"></script>
+  <script>
+    let ucak = null;
+    const durum = document.getElementById("durum");
+
+    async function yenile() {
+      const liste = await fleetcare.getAircraft();
+      ucak = liste[0];
+      document.getElementById("seri").textContent = ucak.serial_no;
+      document.getElementById("sorti").textContent = ucak.total_sorties;
+      document.getElementById("saat").textContent =
+        Number(ucak.total_flight_hours).toFixed(1) + " sa";
+    }
+
+    document.getElementById("kaydet").addEventListener("click", async () => {
+      durum.className = ""; durum.textContent = "Sunucuya gönderiliyor…";
+      try {
+        await fleetcare.addFlight(ucak.id, { durationMin: 11, areaDa: 20 });
+        await fleetcare.logEvent("sortie_logged", { ekran: "ornek-baglanti" });
+        await yenile();
+        durum.className = "ok"; durum.textContent = "Kaydedildi. Sayaçlar güncellendi.";
+      } catch (e) {
+        durum.className = "hata"; durum.textContent = "Kaydedilemedi: " + e.message;
+      }
+    });
+
+    yenile().catch((e) => {
+      durum.className = "hata";
+      durum.textContent = "Bağlantı kurulamadı — fleetcare-api.js içindeki adres ve anahtarı doldurun. (" + e.message + ")";
+    });
+  </script>
+</body>
+</html>
