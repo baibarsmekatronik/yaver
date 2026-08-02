@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import '../dashboard/presentation/dashboard_screen.dart';
 import '../l10n/app_localizations.dart';
-
-import '../features/auth/presentation/login_screen.dart';
 import 'theme/theme.dart';
 
 /// Uygulamanın kök widget'ı.
@@ -26,7 +25,8 @@ class FleetCareApp extends StatelessWidget {
         }
         return const Locale('tr');
       },
-      home: const LoginScreen(),
+      // Faz 0: demo dashboard. Faz 1'de giriş ekranı buraya bağlanacak.
+      home: const DashboardScreen(),
     );
   }
 }
