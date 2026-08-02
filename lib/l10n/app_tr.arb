@@ -4,27 +4,108 @@
   "@appTitle": {
     "description": "Uygulama adı — baibars her zaman küçük harfle yazılır"
   },
-  "loginWelcome": "Hoş geldiniz",
-  "@loginWelcome": {
-    "description": "Giriş ekranı başlığı"
-  },
-  "loginSubtitle": "CT110 İHA'nız için bakım ve sağlık takibi",
-  "@loginSubtitle": {
-    "description": "Giriş ekranı alt başlığı"
-  },
-  "emailLabel": "E-posta adresiniz",
-  "emailHint": "ornek@eposta.com",
-  "sendCodeButton": "Giriş kodu gönder",
-  "@sendCodeButton": {
-    "description": "E-posta + tek kullanımlık kod (OTP) akışını başlatan buton"
-  },
-  "emailInvalid": "Geçerli bir e-posta adresi yazın",
-  "loginComingSoon": "Giriş sistemi çok yakında aktif olacak.",
-  "@loginComingSoon": {
-    "description": "Faz 1'de Supabase Auth bağlanana kadar gösterilen bilgi"
-  },
   "brandTagline": "Çiftçinin Gökyüzündeki Dostu",
   "@brandTagline": {
     "description": "baibars marka sloganı — çevrilmez, her dilde Türkçe kalır"
-  }
+  },
+
+  "loginWelcome": "Hoş geldiniz",
+  "loginSubtitle": "CT110 İHA'nız için bakım ve sağlık takibi",
+  "emailLabel": "E-posta adresiniz",
+  "emailHint": "ornek@eposta.com",
+  "sendCodeButton": "Giriş kodu gönder",
+  "emailInvalid": "Geçerli bir e-posta adresi yazın",
+  "loginComingSoon": "Giriş sistemi çok yakında aktif olacak.",
+
+  "fleetTitle": "İHA'larım",
+  "@fleetTitle": {
+    "description": "Ana ekran başlığı — hava aracı listesi"
+  },
+  "fleetEmptyTitle": "Henüz İHA eklemediniz",
+  "fleetEmptyBody": "İlk İHA'nızı ekleyin, sorti ve uçuş saatlerini takip etmeye başlayalım.",
+  "addAircraft": "İHA ekle",
+  "editAircraft": "Bilgileri düzenle",
+
+  "serialNoLabel": "Seri numarası",
+  "serialNoHint": "Örn. BAI-2026-001",
+  "modelLabel": "Model",
+  "shgmLabel": "SHGM tescil numarası",
+  "shgmHelp": "Varsa yazın, sonradan da ekleyebilirsiniz.",
+  "baselineSortiesLabel": "Şu ana kadarki sorti sayısı",
+  "baselineSortiesHelp": "İHA daha önce uçtuysa mevcut sayacı yazın. Yeniyse 0 bırakın.",
+  "baselineHoursLabel": "Şu ana kadarki uçuş saati",
+  "baselineHoursHelp": "Saat cinsinden yazın. Yeniyse 0 bırakın.",
+
+  "save": "Kaydet",
+  "cancel": "Vazgeç",
+  "deleteAction": "Sil",
+  "close": "Kapat",
+
+  "fieldRequired": "Bu alanı doldurun",
+  "invalidNumber": "Geçerli bir sayı yazın",
+  "serialNoExists": "Bu seri numarası zaten kayıtlı",
+
+  "sortiesLabel": "Sorti",
+  "flightHoursLabel": "Uçuş saati",
+  "hoursUnit": "sa",
+  "minutesUnit": "dk",
+
+  "statusTracking": "Takipte",
+  "statusDueSoon": "Bakım yaklaşıyor",
+  "nextCheckSortie": "Kol katlama vidası kontrolüne {count} sorti kaldı",
+  "@nextCheckSortie": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "nextCheckHours": "Motor tork kontrolüne {count} saat kaldı",
+  "@nextCheckHours": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "startFlight": "Uçuşu başlat",
+  "finishFlight": "Uçuşu bitir",
+  "flightInProgress": "Uçuş sürüyor",
+  "cancelFlight": "Uçuşu iptal et",
+  "cancelFlightTitle": "Uçuş iptal edilsin mi?",
+  "cancelFlightBody": "Kayıt oluşturulmayacak, sayaçlar değişmeyecek.",
+
+  "addManualFlight": "Elle uçuş ekle",
+  "manualFlightTitle": "Uçuş kaydı ekle",
+  "durationLabel": "Süre (dakika)",
+  "areaLabel": "İşlenen alan (dekar)",
+  "optionalSuffix": "isteğe bağlı",
+  "dateLabel": "Tarih",
+
+  "countersTitle": "Sayaçlar",
+  "flightLogTitle": "Uçuş kayıtları",
+  "noFlightsYet": "Henüz uçuş kaydı yok",
+  "flightRowSummary": "{minutes} dk",
+  "@flightRowSummary": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "flightRowArea": "{area} dekar",
+  "@flightRowArea": {
+    "placeholders": {
+      "area": { "type": "String" }
+    }
+  },
+
+  "aircraftSaved": "Kaydedildi",
+  "aircraftDeleted": "İHA silindi",
+  "flightSaved": "Uçuş kaydedildi",
+  "flightDeleted": "Uçuş kaydı silindi",
+  "deleteAircraftTitle": "İHA silinsin mi?",
+  "deleteAircraftBody": "{serialNo} ve bu İHA'ya ait tüm uçuş kayıtları silinecek. Bu işlem geri alınamaz.",
+  "@deleteAircraftBody": {
+    "placeholders": {
+      "serialNo": { "type": "String" }
+    }
+  },
+  "deleteFlightTitle": "Uçuş kaydı silinsin mi?",
+  "deleteFlightBody": "Sayaçlar bu uçuş kadar geri düşecek."
 }

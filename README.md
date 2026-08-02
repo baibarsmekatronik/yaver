@@ -14,7 +14,7 @@ yükümlülüklerini tek yerden takip etmesini sağlayan mobil uygulamadır
 | Faz | Kapsam | Durum |
 |---|---|---|
 | 0 | İskelet: tema, i18n (TR/EN), giriş ekranı | ✅ Tamamlandı |
-| 1 | Kayıt & sayaçlar: kimlik doğrulama, hava aracı CRUD, sorti/uçuş saati | ⬜ |
+| 1 | Kayıt & sayaçlar: İHA kayıtları, uçuş kronometresi, sorti/uçuş saati sayaçları, çevrimdışı saklama | ✅ Tamamlandı |
 | 2 | Bakım motoru: kural tabanlı görevler, kontrol listesi + fotoğraf, servis defteri | ⬜ |
 | 3 | Kit envanteri: yedek parça stoğu, tüketim akışı | ⬜ |
 | 4 | Batarya sağlığı: döngü kaydı, trend grafiği | ⬜ |
@@ -41,8 +41,11 @@ flutter pub get
 # i18n dosyalarını üret
 flutter gen-l10n
 
-# Çalıştır
+# Çalıştır — telefonda (USB ile bağlıyken)
 flutter run
+
+# Çalıştır — bilgisayarda tarayıcıda (en hızlı deneme yolu)
+flutter run -d chrome
 
 # Test ve analiz
 flutter test

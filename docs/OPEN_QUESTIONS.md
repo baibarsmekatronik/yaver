@@ -25,10 +25,21 @@ Onaylı olanlar (CLAUDE.md / datasheet kaynaklı):
   doğrulamadan `validated_by_baibars = false` olarak işaretlenir ve arayüzde
   "AI önerisi" etiketiyle ayrışır.
 
+## Arayüz eşikleri (bakım aralığı değil — baibars onayı ile değişebilir)
+
+| Konu | Şimdiki değer | Not |
+|---|---|---|
+| "Bakım yaklaşıyor" uyarısının çıkma anı | kontrole **10 sorti** veya **10 saat** kala | Bakım aralığı değil, yalnızca uyarı eşiği. `AircraftSummary.warnBeforeSorties` / `warnBeforeHours` |
+
 ## Teknik / entegrasyon
 
 - **İHATTYS API:** henüz yayında değil; `RegulatoryAdapter` stub olarak kalacak.
 - **Telemetri protokolü:** aviyonik tedarikçisiyle teyit edilmedi; Faz 8'de yalnızca arayüz tanımlanacak.
 - **Cansu ↔ Luron AI bağlantısı:** mevcut Cansu asistanına geçiş için uç nokta bilgisi bekleniyor; `AiService` arayüzü arkasında tutulacak.
-- **Supabase proje bilgileri:** üretim projesi URL + anon key (Faz 1 öncesi gerekli).
+- **Yerel depolama (bilinçli sapma):** CLAUDE.md drift/sqflite diyor. Faz 1'de veri
+  `FleetRepository` arayüzünün arkasında basit bir yerel depoda (JSON) tutuluyor;
+  kod üretimi gerektirmediği ve web dahil her platformda ek kurulum istemediği için
+  seçildi. Veri hacmi büyüdüğünde ya da karmaşık sorgu gerektiğinde yalnızca
+  `LocalFleetRepository` drift ile değiştirilecek. Onayınıza sunulur.
+- **Supabase proje bilgileri:** üretim projesi URL + anon key (bulut senkronu için gerekli).
 - **FCM yapılandırması:** Firebase proje kaydı (Faz 2 öncesi gerekli).

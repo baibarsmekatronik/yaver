@@ -1,6 +1,8 @@
 {
   "@@locale": "en",
   "appTitle": "baibars FleetCare",
+  "brandTagline": "Çiftçinin Gökyüzündeki Dostu",
+
   "loginWelcome": "Welcome",
   "loginSubtitle": "Maintenance and health tracking for your CT110 UAV",
   "emailLabel": "Your email address",
@@ -8,5 +10,93 @@
   "sendCodeButton": "Send sign-in code",
   "emailInvalid": "Please enter a valid email address",
   "loginComingSoon": "Sign-in will be available very soon.",
-  "brandTagline": "Çiftçinin Gökyüzündeki Dostu"
+
+  "fleetTitle": "My UAVs",
+  "fleetEmptyTitle": "No UAV added yet",
+  "fleetEmptyBody": "Add your first UAV and let's start tracking sorties and flight hours.",
+  "addAircraft": "Add UAV",
+  "editAircraft": "Edit details",
+
+  "serialNoLabel": "Serial number",
+  "serialNoHint": "e.g. BAI-2026-001",
+  "modelLabel": "Model",
+  "shgmLabel": "SHGM registration number",
+  "shgmHelp": "Enter it if you have one — you can add it later too.",
+  "baselineSortiesLabel": "Sorties so far",
+  "baselineSortiesHelp": "If the UAV has flown before, enter the current count. Leave 0 if new.",
+  "baselineHoursLabel": "Flight hours so far",
+  "baselineHoursHelp": "Enter in hours. Leave 0 if new.",
+
+  "save": "Save",
+  "cancel": "Cancel",
+  "deleteAction": "Delete",
+  "close": "Close",
+
+  "fieldRequired": "Please fill in this field",
+  "invalidNumber": "Please enter a valid number",
+  "serialNoExists": "This serial number is already registered",
+
+  "sortiesLabel": "Sorties",
+  "flightHoursLabel": "Flight hours",
+  "hoursUnit": "h",
+  "minutesUnit": "min",
+
+  "statusTracking": "Tracking",
+  "statusDueSoon": "Check due soon",
+  "nextCheckSortie": "{count} sorties until the arm-fold bolt torque check",
+  "@nextCheckSortie": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "nextCheckHours": "{count} hours until the motor torque check",
+  "@nextCheckHours": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "startFlight": "Start flight",
+  "finishFlight": "End flight",
+  "flightInProgress": "Flight in progress",
+  "cancelFlight": "Cancel flight",
+  "cancelFlightTitle": "Cancel this flight?",
+  "cancelFlightBody": "No record will be created and the counters stay unchanged.",
+
+  "addManualFlight": "Add flight manually",
+  "manualFlightTitle": "Add flight record",
+  "durationLabel": "Duration (minutes)",
+  "areaLabel": "Area covered (decares)",
+  "optionalSuffix": "optional",
+  "dateLabel": "Date",
+
+  "countersTitle": "Counters",
+  "flightLogTitle": "Flight log",
+  "noFlightsYet": "No flight records yet",
+  "flightRowSummary": "{minutes} min",
+  "@flightRowSummary": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "flightRowArea": "{area} decares",
+  "@flightRowArea": {
+    "placeholders": {
+      "area": { "type": "String" }
+    }
+  },
+
+  "aircraftSaved": "Saved",
+  "aircraftDeleted": "UAV deleted",
+  "flightSaved": "Flight saved",
+  "flightDeleted": "Flight record deleted",
+  "deleteAircraftTitle": "Delete this UAV?",
+  "deleteAircraftBody": "{serialNo} and all its flight records will be deleted. This cannot be undone.",
+  "@deleteAircraftBody": {
+    "placeholders": {
+      "serialNo": { "type": "String" }
+    }
+  },
+  "deleteFlightTitle": "Delete this flight record?",
+  "deleteFlightBody": "The counters will go down by this flight."
 }
