@@ -31,6 +31,22 @@ Onaylı olanlar (CLAUDE.md / datasheet kaynaklı):
 |---|---|---|
 | "Bakım yaklaşıyor" uyarısının çıkma anı | kontrole **10 sorti** veya **10 saat** kala | Bakım aralığı değil, yalnızca uyarı eşiği. `AircraftSummary.warnBeforeSorties` / `warnBeforeHours` |
 
+## Platform birleşmesi (07.09.2026 kararı)
+
+FleetCare ile VK takip panosu tek ürüne birleşiyor. Mobil tarafın hizalaması,
+çakışan tablo/rol adları ve backend'den beklenenler ayrı belgede:
+[`PLATFORM_INTEGRATION.md`](PLATFORM_INTEGRATION.md).
+
+Karar bekleyen başlıklar oradaki §4 ve §6'da listeli. En acil olanı:
+
+- **Cihaz sayacı varken elle uçuş girişi.** Cihazın zaten kaydettiği bir sortiyi
+  kullanıcı elle de girerse sayaç çift sayar. Uyarı mı verilsin, elle giriş
+  kapatılsın mı?
+- **Tek tablo/rol adı listesi.** `aircraft`/`drones`, `maintenance_tasks`/
+  `maintenance_events`, `operation_audit_log`/`audit_log`, rol adları.
+- **Alan birimi.** Platform `sorties` alanını mu mu dekar mı tutuyor —
+  dönüşüm iki yerde yapılırsa değer iki kat şişer.
+
 ## Teknik / entegrasyon
 
 - **İHATTYS API:** henüz yayında değil; `RegulatoryAdapter` stub olarak kalacak.

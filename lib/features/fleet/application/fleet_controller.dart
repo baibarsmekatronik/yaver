@@ -42,12 +42,26 @@ class FleetController extends Notifier<List<AircraftSummary>> {
 
     final summaries = _repo.listAircraft().map((aircraft) {
       final own = flights.where((f) => f.aircraftId == aircraft.id);
+      final device = aircraft.deviceTotals;
+
+      // Cihaz sayacı geldiyse o esastır (platform kuralı: doğruluk kaynağı
+      // cihazın bildirdiği ftime). Cihaz sayacı uygulamadan önceki uçuşları
+      // da içerdiği için başlangıç sayacı bu durumda kullanılmaz. Cihazdan
+      // gelen sorti kayıtları da sayaca zaten dahil olduğundan yalnızca elle
+      // girilen uçuşlar üstüne eklenir — aksi halde çift sayılırdı.
+      final counted = device == null
+          ? own
+          : own.where((f) => f.source == FlightSource.manual);
+      final baseSorties = device?.sorties ?? aircraft.baselineSorties;
+      final baseMinutes = device?.flightMinutes ?? aircraft.baselineFlightMinutes;
+
       return AircraftSummary(
         aircraft: aircraft,
-        totalSorties: aircraft.baselineSorties + own.length,
-        totalFlightMinutes: aircraft.baselineFlightMinutes +
-            own.fold(0, (sum, f) => sum + f.durationMin),
+        totalSorties: baseSorties + counted.length,
+        totalFlightMinutes:
+            baseMinutes + counted.fold(0, (sum, f) => sum + f.durationMin),
         hasActiveFlight: active?.aircraftId == aircraft.id,
+        usesDeviceTotals: device != null,
       );
     }).toList();
 

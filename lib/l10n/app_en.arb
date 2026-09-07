@@ -71,6 +71,8 @@
   "dateLabel": "Date",
 
   "countersTitle": "Counters",
+  "countersFromDevice": "Device counter",
+  "flightSourceDevice": "From device",
   "flightLogTitle": "Flight log",
   "noFlightsYet": "No flight records yet",
   "flightRowSummary": "{minutes} min",

@@ -1,6 +1,17 @@
-/// Tek bir uçuş kaydı (bir sorti).
+/// Bir uçuş kaydının nereden geldiği.
 ///
-/// Her uçuş kaydı sorti sayacını 1 artırır; süre dakika cinsinden tutulur.
+/// Sayaç hesabında kritik: cihazdan gelen kayıtlar cihazın ömür sayacına
+/// zaten dahildir, elle girilenler değildir. İkisi ayrılmazsa uçuş saati
+/// iki kere sayılır ve bakım görevleri yanlış zamanda tetiklenir.
+enum FlightSource {
+  /// Kullanıcının kronometreyle ya da elle girdiği uçuş.
+  manual,
+
+  /// baibars platformundan gelen, cihazın kendi bildirdiği sorti.
+  device,
+}
+
+/// Tek bir uçuş kaydı (platform şemasında `sorties`).
 class Flight {
   final String id;
   final String aircraftId;
@@ -9,8 +20,15 @@ class Flight {
   final int durationMin;
 
   /// İşlenen alan (dekar). Zorunlu değil — çiftçi her uçuşta girmek zorunda
-  /// kalmasın diye boş bırakılabilir.
+  /// kalmasın diye boş bırakılabilir. Platformdan gelen değerler dekara
+  /// çevrilerek yazılır (kaynak sistem mu kullanıyor).
   final double? areaCoveredDa;
+
+  final FlightSource source;
+
+  /// Platformdaki `sorties.id`. Eşitlemede aynı sortinin ikinci kez
+  /// yazılmasını engeller. Elle girilen uçuşlarda null.
+  final String? platformId;
 
   const Flight({
     required this.id,
@@ -19,6 +37,8 @@ class Flight {
     required this.endedAt,
     required this.durationMin,
     this.areaCoveredDa,
+    this.source = FlightSource.manual,
+    this.platformId,
   });
 
   Map<String, dynamic> toJson() => {
@@ -28,8 +48,11 @@ class Flight {
         'ended_at': endedAt.toIso8601String(),
         'duration_min': durationMin,
         'area_covered_da': areaCoveredDa,
+        'source': source.name,
+        'platform_id': platformId,
       };
 
+  /// Eski kayıtlarda `source` yoktur; onlar elle girilmiş sayılır.
   factory Flight.fromJson(Map<String, dynamic> json) => Flight(
         id: json['id'] as String,
         aircraftId: json['aircraft_id'] as String,
@@ -37,6 +60,11 @@ class Flight {
         endedAt: DateTime.parse(json['ended_at'] as String),
         durationMin: (json['duration_min'] as num).toInt(),
         areaCoveredDa: (json['area_covered_da'] as num?)?.toDouble(),
+        source: FlightSource.values.firstWhere(
+          (s) => s.name == json['source'],
+          orElse: () => FlightSource.manual,
+        ),
+        platformId: json['platform_id'] as String?,
       );
 }
 

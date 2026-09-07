@@ -58,6 +58,15 @@ flutter analyze
 - Anthropic API anahtarı hiçbir koşulda mobil uygulamada bulunmaz.
 - KVKK: en az kişisel veri; ad/telefon/tarla konumu şifreli saklanır, loglanmaz.
 
+## Platform birleşmesi
+
+FleetCare, baibars Fleet Platform'un mobil istemcisidir: tek backend, tek
+veritabanı, iki istemci (React web panosu + bu uygulama).
+
+- Yol haritası: [`docs/PLATFORM_ROADMAP.md`](docs/PLATFORM_ROADMAP.md)
+- Mobil tarafın hizalaması ve açık kararlar:
+  [`docs/PLATFORM_INTEGRATION.md`](docs/PLATFORM_INTEGRATION.md)
+
 ## Açık sorular
 
 Doğrulanması gereken değerler (bakım aralıkları vb.) için:

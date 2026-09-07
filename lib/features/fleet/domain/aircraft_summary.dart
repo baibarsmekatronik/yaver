@@ -25,18 +25,24 @@ class UpcomingCheck {
 class AircraftSummary {
   final Aircraft aircraft;
 
-  /// Başlangıç sayacı + uygulamada kaydedilen uçuşlar.
+  /// Toplam sorti. Cihaz sayacı varsa ondan, yoksa başlangıç sayacı +
+  /// uygulamada kaydedilen uçuşlardan gelir.
   final int totalSorties;
   final int totalFlightMinutes;
 
   /// Bu hava aracında şu an sürmekte olan bir uçuş var mı.
   final bool hasActiveFlight;
 
+  /// Sayaçlar cihazın kendi bildirdiği değerlere mi dayanıyor.
+  /// Doğruysa gösterilen rakam tahmin değil, cihaz kaydıdır.
+  final bool usesDeviceTotals;
+
   const AircraftSummary({
     required this.aircraft,
     required this.totalSorties,
     required this.totalFlightMinutes,
     this.hasActiveFlight = false,
+    this.usesDeviceTotals = false,
   });
 
   double get totalFlightHours => totalFlightMinutes / 60;

@@ -80,6 +80,14 @@
   "dateLabel": "Tarih",
 
   "countersTitle": "Sayaçlar",
+  "countersFromDevice": "Cihaz sayacı",
+  "@countersFromDevice": {
+    "description": "Sayaçların cihazın kendi kaydından geldiğini belirtir"
+  },
+  "flightSourceDevice": "Cihazdan",
+  "@flightSourceDevice": {
+    "description": "Uçuş kaydının cihazdan otomatik geldiğini belirten rozet"
+  },
   "flightLogTitle": "Uçuş kayıtları",
   "noFlightsYet": "Henüz uçuş kaydı yok",
   "flightRowSummary": "{minutes} dk",

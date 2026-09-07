@@ -254,8 +254,27 @@ class _CountersCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(l10n.countersTitle,
-                    style: Theme.of(context).textTheme.titleMedium),
+                Row(
+                  children: [
+                    Text(l10n.countersTitle,
+                        style: Theme.of(context).textTheme.titleMedium),
+                    // Sayaç cihazdan geliyorsa çiftçi bunun tahmin değil
+                    // cihaz kaydı olduğunu görmeli.
+                    if (summary.usesDeviceTotals) ...[
+                      const SizedBox(width: 8),
+                      const Icon(Icons.sensors,
+                          size: 16, color: BaibarsColors.blue),
+                      const SizedBox(width: 4),
+                      Text(
+                        l10n.countersFromDevice,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: BaibarsColors.blue,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                    ],
+                  ],
+                ),
                 HealthChip(health: summary.health),
               ],
             ),
@@ -414,6 +433,9 @@ class _FlightRow extends StatelessWidget {
         [
           l10n.flightRowSummary(flight.durationMin),
           if (area != null) l10n.flightRowArea(area.toStringAsFixed(1)),
+          // Elle girilen kayıtlar için rozet gösterilmiyor — bugün hepsi öyle,
+          // gereksiz tekrar olurdu.
+          if (flight.source == FlightSource.device) l10n.flightSourceDevice,
         ].join(' · '),
       ),
       trailing: IconButton(
