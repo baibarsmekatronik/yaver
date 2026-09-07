@@ -29,7 +29,8 @@ Onaylı olanlar (CLAUDE.md / datasheet kaynaklı):
 
 | Konu | Şimdiki değer | Not |
 |---|---|---|
-| "Bakım yaklaşıyor" uyarısının çıkma anı | kontrole **10 sorti** veya **10 saat** kala | Bakım aralığı değil, yalnızca uyarı eşiği. `AircraftSummary.warnBeforeSorties` / `warnBeforeHours` |
+| "Bakım yaklaşıyor" uyarısının çıkma anı | her kuralda ayrı `warnBefore` (100'lük aralıklarda 10) | Bakım aralığı değil, uyarı eşiği. Artık koda gömülü değil, kural verisinde |
+| Tazelik gösterim eşikleri | 0–3 sn Canlı / 3–15 sn Gecikiyor / 15–60 sn Veri eski / >60 sn Bağlantı yok | Yol haritası v1.2; üretim ölçümünden sonra kalibre edilecek. Canlı takip ekranı yazılınca uygulanacak |
 
 ## Platform birleşmesi (07.09.2026 kararı)
 
@@ -37,15 +38,22 @@ FleetCare ile VK takip panosu tek ürüne birleşiyor. Mobil tarafın hizalamas�
 çakışan tablo/rol adları ve backend'den beklenenler ayrı belgede:
 [`PLATFORM_INTEGRATION.md`](PLATFORM_INTEGRATION.md).
 
-Karar bekleyen başlıklar oradaki §4 ve §6'da listeli. En acil olanı:
+Karar bekleyen başlıklar oradaki §5 ve §7'de listeli. En acil olanlar:
 
+- **Bakım tablosu TBD işaretleri.** Yol haritası v1.2 tabloyu "baibars onaylı
+  varsayılan" diye niteliyor; CLAUDE.md beş aralığı TBD olarak işaretliyor.
+  Tohum veride TBD korundu — onay verildiyse kaldırılmalı.
 - **Cihaz sayacı varken elle uçuş girişi.** Cihazın zaten kaydettiği bir sortiyi
   kullanıcı elle de girerse sayaç çift sayar. Uyarı mı verilsin, elle giriş
   kapatılsın mı?
+- **Sahiplik devri (v1.2 D3).** İkinci el satışta gövde ömrü taşınıyor ama
+  önceki sahibin kayıtları taşınmıyor. Telefondaki yerel uçuş kayıtlarına ne
+  olacak — silinsin mi, arşivlensin mi?
 - **Tek tablo/rol adı listesi.** `aircraft`/`drones`, `maintenance_tasks`/
   `maintenance_events`, `operation_audit_log`/`audit_log`, rol adları.
 - **Alan birimi.** Platform `sorties` alanını mu mu dekar mı tutuyor —
   dönüşüm iki yerde yapılırsa değer iki kat şişer.
+- **`002_v1_2_patch.sql` elimize ulaşmadı** (v1.2 §4 atıf yapıyor).
 
 ## Teknik / entegrasyon
 

@@ -1,4 +1,5 @@
 import 'aircraft.dart';
+import 'maintenance_rule.dart';
 
 /// Faz 1'de gösterilebilen bakım durumu.
 ///
@@ -8,17 +9,16 @@ import 'aircraft.dart';
 /// yalnızca "takipte" ve "yaklaşıyor" gösteriliyor.
 enum FleetHealth { tracking, dueSoon }
 
-/// Yaklaşan kontrolün hangi sayaca bağlı olduğu.
-enum UpcomingCheckBasis { sortie, hours }
-
 /// Bir sonraki periyodik kontrole ne kadar kaldığı.
 class UpcomingCheck {
-  final UpcomingCheckBasis basis;
+  final MaintenanceRule rule;
 
   /// Kontrole kalan miktar: sorti adedi veya uçuş saati.
   final int remaining;
 
-  const UpcomingCheck({required this.basis, required this.remaining});
+  const UpcomingCheck({required this.rule, required this.remaining});
+
+  bool get isDueSoon => remaining <= rule.warnBefore;
 }
 
 /// Hava aracı + hesaplanmış sayaçlar (liste ve detay ekranlarının verisi).
@@ -28,59 +28,69 @@ class AircraftSummary {
   /// Toplam sorti. Cihaz sayacı varsa ondan, yoksa başlangıç sayacı +
   /// uygulamada kaydedilen uçuşlardan gelir.
   final int totalSorties;
-  final int totalFlightMinutes;
+
+  /// Toplam uçuş süresi (saniye). Cihaz sayacı varken **alt sınır**
+  /// (`min_known`) kullanılır — bakım aralığını sessizce uzatmamak için.
+  final int totalFlightSeconds;
 
   /// Bu hava aracında şu an sürmekte olan bir uçuş var mı.
   final bool hasActiveFlight;
 
   /// Sayaçlar cihazın kendi bildirdiği değerlere mi dayanıyor.
-  /// Doğruysa gösterilen rakam tahmin değil, cihaz kaydıdır.
   final bool usesDeviceTotals;
+
+  /// Kesintili sorti nedeniyle sayacın altında belirsizlik var mı
+  /// (yol haritası v1.2, D2). Doğruysa gösterilen süre alt sınırdır ve
+  /// bakım uyarısı bu belirsizliği görünür kılmalıdır.
+  final bool countersLowConfidence;
+
+  /// Bu hava aracı için geçerli bakım kuralları — veriden gelir, koda gömülü
+  /// değildir (yol haritası v1.2: aralıklar `maintenance_rules` tablosunda).
+  final List<MaintenanceRule> rules;
 
   const AircraftSummary({
     required this.aircraft,
     required this.totalSorties,
-    required this.totalFlightMinutes,
+    required this.totalFlightSeconds,
     this.hasActiveFlight = false,
     this.usesDeviceTotals = false,
+    this.countersLowConfidence = false,
+    this.rules = const [],
   });
 
-  double get totalFlightHours => totalFlightMinutes / 60;
+  int get totalFlightMinutes => totalFlightSeconds ~/ 60;
 
-  /// baibars mühendisliğince doğrulanmış aralıklar (CLAUDE.md).
-  /// TBD işaretli aralıklar burada bilinçli olarak yok — onaylanmadan
-  /// çiftçiye kesin bilgi gibi gösterilmez.
-  static const int armBoltSortieInterval = 100;
-  static const int motorTorqueHourInterval = 100;
+  double get totalFlightHours => totalFlightSeconds / 3600;
 
-  /// "Yaklaşıyor" uyarısının ne kadar erken çıkacağı. Bu bir bakım aralığı
-  /// değil, yalnızca arayüz eşiği — baibars isterse değiştirilebilir.
-  static const int warnBeforeSorties = 10;
-  static const int warnBeforeHours = 10;
+  /// Sayaçla değerlendirilebilen ve baibars'ın onayladığı kurallar.
+  ///
+  /// Onay bekleyen (TBD) aralıklar çiftçiye kesin bilgi gibi gösterilmez;
+  /// takvim ve döngü tabanlı kurallar sırasıyla Faz 2 ve Faz 4'te devreye girer.
+  List<MaintenanceRule> get _activeRules => rules
+      .where((r) =>
+          !r.isTbd && r.isCounterEvaluable && r.appliesTo(aircraft.model))
+      .toList();
 
-  /// Kalan miktarı en az olan yaklaşan kontrol.
-  UpcomingCheck get nextCheck {
-    final sortiesLeft =
-        armBoltSortieInterval - (totalSorties % armBoltSortieInterval);
-    final hoursLeft =
-        motorTorqueHourInterval - (totalFlightHours.floor() % motorTorqueHourInterval);
+  /// Oransal olarak en yakın kontrol. Değerlendirilebilir kural yoksa null.
+  UpcomingCheck? get nextCheck {
+    UpcomingCheck? closest;
+    double closestRatio = double.infinity;
 
-    // İki kontrolden hangisi oransal olarak daha yakınsa onu göster.
-    final sortieRatio = sortiesLeft / armBoltSortieInterval;
-    final hourRatio = hoursLeft / motorTorqueHourInterval;
+    for (final rule in _activeRules) {
+      final counter = rule.intervalType == MaintenanceIntervalType.sortie
+          ? totalSorties
+          : totalFlightHours.floor();
+      final remaining = rule.intervalValue - (counter % rule.intervalValue);
+      final ratio = remaining / rule.intervalValue;
 
-    return sortieRatio <= hourRatio
-        ? UpcomingCheck(basis: UpcomingCheckBasis.sortie, remaining: sortiesLeft)
-        : UpcomingCheck(basis: UpcomingCheckBasis.hours, remaining: hoursLeft);
+      if (ratio < closestRatio) {
+        closestRatio = ratio;
+        closest = UpcomingCheck(rule: rule, remaining: remaining);
+      }
+    }
+    return closest;
   }
 
-  FleetHealth get health {
-    final check = nextCheck;
-    final threshold = check.basis == UpcomingCheckBasis.sortie
-        ? warnBeforeSorties
-        : warnBeforeHours;
-    return check.remaining <= threshold
-        ? FleetHealth.dueSoon
-        : FleetHealth.tracking;
-  }
+  FleetHealth get health =>
+      (nextCheck?.isDueSoon ?? false) ? FleetHealth.dueSoon : FleetHealth.tracking;
 }

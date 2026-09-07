@@ -7,6 +7,7 @@ import 'package:baibars_fleetcare/features/fleet/data/local_fleet_repository.dar
 import 'package:baibars_fleetcare/features/fleet/domain/aircraft.dart';
 import 'package:baibars_fleetcare/features/fleet/domain/aircraft_summary.dart';
 import 'package:baibars_fleetcare/features/fleet/domain/flight.dart';
+import 'package:baibars_fleetcare/features/fleet/domain/maintenance_rule.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -337,8 +338,10 @@ void main() {
 
       final summary = container.read(fleetControllerProvider).single;
       expect(summary.health, FleetHealth.tracking);
-      expect(summary.nextCheck.basis, UpcomingCheckBasis.sortie);
-      expect(summary.nextCheck.remaining, 80);
+      expect(summary.nextCheck!.rule.intervalType,
+          MaintenanceIntervalType.sortie);
+      expect(summary.nextCheck!.rule.id, 'arm_fold_bolt_torque');
+      expect(summary.nextCheck!.remaining, 80);
     });
 
     test('100 sortiye yaklaşınca uyarı verir', () async {
@@ -351,7 +354,7 @@ void main() {
 
       final summary = container.read(fleetControllerProvider).single;
       expect(summary.health, FleetHealth.dueSoon);
-      expect(summary.nextCheck.remaining, 5);
+      expect(summary.nextCheck!.remaining, 5);
     });
 
     test('saat sayacı daha yakınsa saat kontrolü gösterilir', () async {
@@ -364,9 +367,156 @@ void main() {
           );
 
       final summary = container.read(fleetControllerProvider).single;
-      expect(summary.nextCheck.basis, UpcomingCheckBasis.hours);
-      expect(summary.nextCheck.remaining, 5);
+      expect(summary.nextCheck!.rule.intervalType,
+          MaintenanceIntervalType.hours);
+      expect(summary.nextCheck!.rule.id, 'motor_torque_bolts');
+      expect(summary.nextCheck!.remaining, 5);
       expect(summary.health, FleetHealth.dueSoon);
+    });
+
+    test('onay bekleyen (TBD) aralıklar çiftçiye gösterilmez', () async {
+      final container = makeContainer();
+      await container.read(fleetControllerProvider.notifier).addAircraft(
+            serialNo: 'BAI-2026-001',
+            model: 'CT110',
+            // 24 sorti: onaysız pervane kuralına (25 sorti) 1 sorti kalmış
+            // olurdu; onaylı kol katlama kuralı (100) gösterilmeli.
+            baselineSorties: 24,
+          );
+
+      final check = container.read(fleetControllerProvider).single.nextCheck!;
+      expect(check.rule.isTbd, isFalse);
+      expect(check.rule.id, 'arm_fold_bolt_torque');
+    });
+
+    test('kurallar veriden gelir — koda gömülü değil', () async {
+      // baibars aralığı değiştirdiğinde uygulama yeniden yayınlanmamalı:
+      // kural listesi değişince sayaç hesabı da değişmeli.
+      final container = ProviderContainer(
+        overrides: [
+          fleetRepositoryProvider
+              .overrideWithValue(LocalFleetRepository.open(store)),
+          nowProvider.overrideWithValue(() => clock),
+          maintenanceRulesProvider.overrideWithValue([
+            MaintenanceRule(
+              id: 'ozel_kural',
+              labelTr: 'Özel kontrol',
+              labelEn: 'Custom check',
+              intervalType: MaintenanceIntervalType.sortie,
+              intervalValue: 30,
+              warnBefore: 4,
+              validResetActions: const {MaintenanceResetAction.inspected},
+              effectiveFrom: DateTime.utc(2026, 1, 1),
+            ),
+          ]),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(fleetControllerProvider.notifier).addAircraft(
+            serialNo: 'BAI-2026-001',
+            model: 'CT110',
+            baselineSorties: 28,
+          );
+
+      final summary = container.read(fleetControllerProvider).single;
+      expect(summary.nextCheck!.rule.id, 'ozel_kural');
+      expect(summary.nextCheck!.remaining, 2);
+      expect(summary.health, FleetHealth.dueSoon);
+    });
+  });
+
+  group('sayaç güvenilirliği (v1.2 D2)', () {
+    void seedTotals({
+      required int confirmedSeconds,
+      required int minKnownSeconds,
+    }) {
+      store = InMemoryLocalStore({
+        'fleet.aircraft': jsonEncode([
+          {
+            'id': 'a1',
+            'serial_no': 'BAI-2026-001',
+            'model': 'CT110',
+            'device_totals': {
+              'sorties': 40,
+              'flight_seconds_confirmed': confirmedSeconds,
+              'flight_seconds_min_known': minKnownSeconds,
+              'as_of': '2026-09-07T08:00:00.000',
+            },
+            'created_at': '2026-08-01T09:00:00.000',
+            'updated_at': '2026-08-01T09:00:00.000',
+          }
+        ]),
+      });
+    }
+
+    test('sayaç alt sınırı kullanır — eksik saymaz', () {
+      // Kesintili sorti: kesin 10 saat, ama en az 12 saat uçulmuş.
+      seedTotals(confirmedSeconds: 36000, minKnownSeconds: 43200);
+
+      final summary = makeContainer().read(fleetControllerProvider).single;
+      // Eksik sayarsak bakım aralığı sessizce uzar; alt sınır kullanılmalı.
+      expect(summary.totalFlightHours, 12);
+      expect(summary.countersLowConfidence, isTrue);
+    });
+
+    test('belirsizlik yoksa uyarı verilmez', () {
+      seedTotals(confirmedSeconds: 36000, minKnownSeconds: 36000);
+
+      final summary = makeContainer().read(fleetControllerProvider).single;
+      expect(summary.totalFlightHours, 10);
+      expect(summary.countersLowConfidence, isFalse);
+    });
+
+    test('kesintili uçuş kaydı da belirsizlik işaretler', () {
+      store = InMemoryLocalStore({
+        'fleet.aircraft': jsonEncode([
+          {
+            'id': 'a1',
+            'serial_no': 'BAI-2026-001',
+            'model': 'CT110',
+            'created_at': '2026-08-01T09:00:00.000',
+            'updated_at': '2026-08-01T09:00:00.000',
+          }
+        ]),
+        'fleet.flights': jsonEncode([
+          {
+            'id': 'f1',
+            'aircraft_id': 'a1',
+            'started_at': '2026-08-02T09:00:00.000',
+            'ended_at': '2026-08-02T09:10:00.000',
+            'duration_min': 10,
+            'completeness': 'interrupted',
+          }
+        ]),
+      });
+
+      final summary = makeContainer().read(fleetControllerProvider).single;
+      expect(summary.countersLowConfidence, isTrue);
+    });
+
+    test('v1.1 tek sayaçlı kayıt okunur, belirsizlik işaretlenmez', () {
+      store = InMemoryLocalStore({
+        'fleet.aircraft': jsonEncode([
+          {
+            'id': 'a1',
+            'serial_no': 'BAI-2026-001',
+            'model': 'CT110',
+            // Eski biçim: yalnızca flight_minutes vardı.
+            'device_totals': {
+              'sorties': 40,
+              'flight_minutes': 600,
+              'as_of': '2026-09-07T08:00:00.000',
+            },
+            'created_at': '2026-08-01T09:00:00.000',
+            'updated_at': '2026-08-01T09:00:00.000',
+          }
+        ]),
+      });
+
+      final summary = makeContainer().read(fleetControllerProvider).single;
+      expect(summary.totalFlightHours, 10);
+      expect(summary.countersLowConfidence, isFalse);
     });
   });
 }

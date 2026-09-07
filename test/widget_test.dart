@@ -117,8 +117,9 @@ void main() {
     await addAircraft(tester, serialNo: 'BAI-2026-001', sorties: '95');
 
     expect(find.text('Bakım yaklaşıyor'), findsOneWidget);
+    // Kural adı tohum veriden geliyor, ARB'den değil.
     expect(
-      find.text('Kol katlama vidası kontrolüne 5 sorti kaldı'),
+      find.text('Kol katlama aparatı vidası tork kontrolü — 5 sorti kaldı'),
       findsOneWidget,
     );
   });

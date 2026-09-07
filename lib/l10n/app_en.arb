@@ -43,18 +43,22 @@
 
   "statusTracking": "Tracking",
   "statusDueSoon": "Check due soon",
-  "nextCheckSortie": "{count} sorties until the arm-fold bolt torque check",
+  "nextCheckSortie": "{label} — {count} sorties left",
   "@nextCheckSortie": {
     "placeholders": {
+      "label": { "type": "String" },
       "count": { "type": "int" }
     }
   },
-  "nextCheckHours": "{count} hours until the motor torque check",
+  "nextCheckHours": "{label} — {count} hours left",
   "@nextCheckHours": {
     "placeholders": {
+      "label": { "type": "String" },
       "count": { "type": "int" }
     }
   },
+  "countersLowConfidence": "Counter may be incomplete",
+  "countersLowConfidenceHelp": "A flight lost connection. The real flight time may be higher than shown; do the maintenance check early.",
 
   "startFlight": "Start flight",
   "finishFlight": "End flight",

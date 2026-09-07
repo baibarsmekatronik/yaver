@@ -11,6 +11,24 @@ enum FlightSource {
   device,
 }
 
+/// Sorti defteri durumu (yol haritası v1.2, §3).
+///
+/// Telemetri kesilmesi tek başına "indi" demek değildir; kesintili sorti
+/// kapanmış sayılmaz, süresi alt sınır olarak kalır.
+enum SortieCompleteness {
+  /// Açık/devam eden sorti; süre henüz kesinleşmedi.
+  provisional,
+
+  /// Temiz kapandı — iniş kanıtı ve kararlı yer örnekleri alındı.
+  confirmed,
+
+  /// Bağlantı uçuş bitmeden koptu; kayıtlı süre gerçek süreden az.
+  interrupted,
+
+  /// Geçmiş verisiyle sonradan tamamlandı.
+  reconciled,
+}
+
 /// Tek bir uçuş kaydı (platform şemasında `sorties`).
 class Flight {
   final String id;
@@ -26,6 +44,10 @@ class Flight {
 
   final FlightSource source;
 
+  /// Sorti defteri durumu. Elle girilen kayıtlarda varsayılan `confirmed`:
+  /// kullanıcı süreyi kendisi beyan etmiştir, bekleyen bir belirsizlik yoktur.
+  final SortieCompleteness completeness;
+
   /// Platformdaki `sorties.id`. Eşitlemede aynı sortinin ikinci kez
   /// yazılmasını engeller. Elle girilen uçuşlarda null.
   final String? platformId;
@@ -38,8 +60,14 @@ class Flight {
     required this.durationMin,
     this.areaCoveredDa,
     this.source = FlightSource.manual,
+    this.completeness = SortieCompleteness.confirmed,
     this.platformId,
   });
+
+  /// Kayıtlı süre gerçek süreden az olabilir mi.
+  bool get isDurationLowerBound =>
+      completeness == SortieCompleteness.interrupted ||
+      completeness == SortieCompleteness.provisional;
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -49,10 +77,12 @@ class Flight {
         'duration_min': durationMin,
         'area_covered_da': areaCoveredDa,
         'source': source.name,
+        'completeness': completeness.name,
         'platform_id': platformId,
       };
 
-  /// Eski kayıtlarda `source` yoktur; onlar elle girilmiş sayılır.
+  /// Eski kayıtlarda `source` / `completeness` yoktur; onlar elle girilmiş
+  /// ve kapanmış sayılır.
   factory Flight.fromJson(Map<String, dynamic> json) => Flight(
         id: json['id'] as String,
         aircraftId: json['aircraft_id'] as String,
@@ -63,6 +93,10 @@ class Flight {
         source: FlightSource.values.firstWhere(
           (s) => s.name == json['source'],
           orElse: () => FlightSource.manual,
+        ),
+        completeness: SortieCompleteness.values.firstWhere(
+          (c) => c.name == json['completeness'],
+          orElse: () => SortieCompleteness.confirmed,
         ),
         platformId: json['platform_id'] as String?,
       );

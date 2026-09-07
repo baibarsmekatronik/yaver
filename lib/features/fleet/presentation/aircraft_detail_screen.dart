@@ -13,6 +13,7 @@ import 'aircraft_form_screen.dart';
 import 'manual_flight_sheet.dart';
 import 'widgets/counter_tile.dart';
 import 'widgets/health_chip.dart';
+import 'widgets/next_check_text.dart';
 
 /// Tek bir İHA'nın detayı: sayaçlar, uçuş kronometresi ve uçuş kayıtları.
 class AircraftDetailScreen extends ConsumerStatefulWidget {
@@ -237,7 +238,7 @@ class _CountersCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final check = summary.nextCheck;
+    final checkText = nextCheckText(context, summary);
 
     return Card(
       elevation: 0,
@@ -296,18 +297,56 @@ class _CountersCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Text(
-              switch (check.basis) {
-                UpcomingCheckBasis.sortie =>
-                  l10n.nextCheckSortie(check.remaining),
-                UpcomingCheckBasis.hours => l10n.nextCheckHours(check.remaining),
-              },
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: Colors.black54),
-            ),
+            if (checkText != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                checkText,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: Colors.black54),
+              ),
+            ],
+            if (summary.countersLowConfidence) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: BaibarsColors.statusDue.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.error_outline,
+                        size: 18, color: BaibarsColors.statusDue),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.countersLowConfidence,
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelLarge
+                                ?.copyWith(
+                                  color: BaibarsColors.statusDue,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            l10n.countersLowConfidenceHelp,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),

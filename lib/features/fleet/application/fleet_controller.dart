@@ -2,9 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import '../data/fleet_repository.dart';
+import '../data/maintenance_rules_seed.dart';
 import '../domain/aircraft.dart';
 import '../domain/aircraft_summary.dart';
 import '../domain/flight.dart';
+import '../domain/maintenance_rule.dart';
 
 /// Uygulama açılışında `main.dart` içinde gerçek depo ile geçersiz kılınır;
 /// testlerde bellek deposu verilir.
@@ -15,6 +17,11 @@ final fleetRepositoryProvider = Provider<FleetRepository>(
 );
 
 final uuidProvider = Provider<Uuid>((ref) => const Uuid());
+
+/// Bakım kuralları veriden gelir; tohum yalnızca ilk kurulum içindir.
+/// Platform bağlandığında bu sağlayıcı `maintenance_rules` tablosunu okuyacak.
+final maintenanceRulesProvider =
+    Provider<List<MaintenanceRule>>((ref) => maintenanceRulesSeed);
 
 /// Şu anki saati veren sağlayıcı — testler zamanı sabitleyebilsin diye.
 final nowProvider = Provider<DateTime Function()>((ref) => DateTime.now);
@@ -31,6 +38,7 @@ final fleetControllerProvider =
 class FleetController extends Notifier<List<AircraftSummary>> {
   FleetRepository get _repo => ref.read(fleetRepositoryProvider);
   Uuid get _uuid => ref.read(uuidProvider);
+  List<MaintenanceRule> get _rules => ref.read(maintenanceRulesProvider);
   DateTime _now() => ref.read(nowProvider)();
 
   @override
@@ -53,15 +61,26 @@ class FleetController extends Notifier<List<AircraftSummary>> {
           ? own
           : own.where((f) => f.source == FlightSource.manual);
       final baseSorties = device?.sorties ?? aircraft.baselineSorties;
-      final baseMinutes = device?.flightMinutes ?? aircraft.baselineFlightMinutes;
+
+      // Cihaz sayacında alt sınır (min_known) kullanılır: kesintili sorti
+      // yüzünden eksik sayarsak bakım aralığı sessizce uzar (v1.2, D2).
+      final baseSeconds = device?.flightSecondsMinKnown ??
+          aircraft.baselineFlightMinutes * 60;
+
+      // Elle girilen kayıtlar arasında da alt sınır olanlar varsa
+      // (ör. platformdan gelmiş kesintili sorti) belirsizlik işaretlenir.
+      final hasLowerBoundFlight = counted.any((f) => f.isDurationLowerBound);
 
       return AircraftSummary(
         aircraft: aircraft,
         totalSorties: baseSorties + counted.length,
-        totalFlightMinutes:
-            baseMinutes + counted.fold(0, (sum, f) => sum + f.durationMin),
+        totalFlightSeconds:
+            baseSeconds + counted.fold(0, (sum, f) => sum + f.durationMin * 60),
         hasActiveFlight: active?.aircraftId == aircraft.id,
         usesDeviceTotals: device != null,
+        countersLowConfidence:
+            (device?.isLowConfidence ?? false) || hasLowerBoundFlight,
+        rules: _rules,
       );
     }).toList();
 

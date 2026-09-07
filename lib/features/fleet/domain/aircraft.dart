@@ -1,11 +1,21 @@
 /// Cihazın kendi bildirdiği ömür sayaçları (platform `airframe_totals`).
 ///
-/// Platform yol haritasının sabit kuralı: uçuş saatinin doğruluk kaynağı
-/// cihazın bildirdiği `ftime` değeridir — duvar saati değil. Bu değer
-/// geldiğinde uygulamadaki elle sayaç tahmini yerine bu kullanılır.
+/// Platformun sabit kuralı: uçuş saatinin doğruluk kaynağı cihazın bildirdiği
+/// `ftime` değeridir — duvar saati değil.
+///
+/// Yol haritası v1.2 (D2) sayacı ikiye ayırıyor. Uçuş bitmeden bağlantı
+/// koparsa son bilinen `ftime` gerçek süreden **azdır**; tek sayaçla
+/// çalışmak bakım aralığını sessizce uzatır. Bu yüzden:
+///
+/// - [flightSecondsConfirmed] — temiz kapanmış (CONFIRMED) sortilerin toplamı
+/// - [flightSecondsMinKnown]  — kesintili sortiler dahil, *en az* bu kadar
+///
+/// Gerçek süre ≥ minKnown ≥ confirmed. Bakım hesabında **minKnown**
+/// kullanılır: eksik saymaktansa erken uyarmak güvenlidir.
 class AirframeTotals {
   final int sorties;
-  final int flightMinutes;
+  final int flightSecondsConfirmed;
+  final int flightSecondsMinKnown;
 
   /// Platformun bu değerleri en son ne zaman bildirdiği.
   /// Bağlantı koptuğunda sayacın ne kadar eski olduğunu göstermek için tutulur.
@@ -13,21 +23,41 @@ class AirframeTotals {
 
   const AirframeTotals({
     required this.sorties,
-    required this.flightMinutes,
+    required this.flightSecondsConfirmed,
+    required this.flightSecondsMinKnown,
     required this.asOf,
   });
 
+  /// Kesintili sorti yüzünden sayacın altında belirsizlik var mı.
+  /// Doğruysa gösterilen süre alt sınırdır, gerçek süre daha fazla olabilir.
+  bool get isLowConfidence => flightSecondsMinKnown > flightSecondsConfirmed;
+
+  /// Belirsizlik payı (saniye).
+  int get uncertaintySeconds => flightSecondsMinKnown - flightSecondsConfirmed;
+
   Map<String, dynamic> toJson() => {
         'sorties': sorties,
-        'flight_minutes': flightMinutes,
+        'flight_seconds_confirmed': flightSecondsConfirmed,
+        'flight_seconds_min_known': flightSecondsMinKnown,
         'as_of': asOf.toIso8601String(),
       };
 
-  factory AirframeTotals.fromJson(Map<String, dynamic> json) => AirframeTotals(
-        sorties: (json['sorties'] as num).toInt(),
-        flightMinutes: (json['flight_minutes'] as num).toInt(),
-        asOf: DateTime.parse(json['as_of'] as String),
-      );
+  /// v1.1 kayıtlarında tek bir `flight_minutes` alanı vardı; o değer
+  /// hem confirmed hem minKnown olarak okunur (belirsizlik bilgisi yoktu).
+  factory AirframeTotals.fromJson(Map<String, dynamic> json) {
+    final legacyMinutes = (json['flight_minutes'] as num?)?.toInt();
+    final confirmed = (json['flight_seconds_confirmed'] as num?)?.toInt() ??
+        (legacyMinutes ?? 0) * 60;
+    final minKnown = (json['flight_seconds_min_known'] as num?)?.toInt() ??
+        confirmed;
+
+    return AirframeTotals(
+      sorties: (json['sorties'] as num).toInt(),
+      flightSecondsConfirmed: confirmed,
+      flightSecondsMinKnown: minKnown,
+      asOf: DateTime.parse(json['as_of'] as String),
+    );
+  }
 }
 
 /// Filodaki bir hava aracı (platform şemasında `drones`).

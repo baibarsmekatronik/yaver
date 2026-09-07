@@ -9,6 +9,7 @@ import 'aircraft_detail_screen.dart';
 import 'aircraft_form_screen.dart';
 import 'widgets/counter_tile.dart';
 import 'widgets/health_chip.dart';
+import 'widgets/next_check_text.dart';
 
 /// Ana ekran — filodaki tüm İHA'lar, sayaçları ve yaklaşan kontrolleri.
 class FleetScreen extends ConsumerWidget {
@@ -90,7 +91,7 @@ class _AircraftCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final textTheme = Theme.of(context).textTheme;
     final aircraft = summary.aircraft;
-    final check = summary.nextCheck;
+    final checkText = nextCheckText(context, summary);
 
     return Card(
       elevation: 0,
@@ -153,26 +154,44 @@ class _AircraftCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  const Icon(Icons.build_outlined,
-                      size: 16, color: Colors.black45),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      switch (check.basis) {
-                        UpcomingCheckBasis.sortie =>
-                          l10n.nextCheckSortie(check.remaining),
-                        UpcomingCheckBasis.hours =>
-                          l10n.nextCheckHours(check.remaining),
-                      },
-                      style: textTheme.bodySmall
-                          ?.copyWith(color: Colors.black54),
+              if (checkText != null) ...[
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    const Icon(Icons.build_outlined,
+                        size: 16, color: Colors.black45),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        checkText,
+                        style: textTheme.bodySmall
+                            ?.copyWith(color: Colors.black54),
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
+              // Bağlantı kopmuş uçuş varsa sayaç alt sınırdır; çiftçi bunu
+              // görmeli, yoksa bakımı gecikmiş sanmadan erteler.
+              if (summary.countersLowConfidence) ...[
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(Icons.error_outline,
+                        size: 16, color: BaibarsColors.statusDue),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        l10n.countersLowConfidence,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: BaibarsColors.statusDue,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               if (summary.hasActiveFlight) ...[
                 const SizedBox(height: 12),
                 Row(

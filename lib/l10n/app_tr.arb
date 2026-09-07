@@ -52,18 +52,26 @@
 
   "statusTracking": "Takipte",
   "statusDueSoon": "Bakım yaklaşıyor",
-  "nextCheckSortie": "Kol katlama vidası kontrolüne {count} sorti kaldı",
+  "nextCheckSortie": "{label} — {count} sorti kaldı",
   "@nextCheckSortie": {
+    "description": "Kural adı veriden gelir; aralıklar koda gömülü değildir",
     "placeholders": {
+      "label": { "type": "String" },
       "count": { "type": "int" }
     }
   },
-  "nextCheckHours": "Motor tork kontrolüne {count} saat kaldı",
+  "nextCheckHours": "{label} — {count} saat kaldı",
   "@nextCheckHours": {
     "placeholders": {
+      "label": { "type": "String" },
       "count": { "type": "int" }
     }
   },
+  "countersLowConfidence": "Sayaç eksik olabilir",
+  "@countersLowConfidence": {
+    "description": "Bağlantı kopan uçuş yüzünden süre alt sınır olduğunda"
+  },
+  "countersLowConfidenceHelp": "Bir uçuşta bağlantı kopmuş. Gerçek uçuş süresi burada yazandan fazla olabilir; bakım kontrolünü erken yapın.",
 
   "startFlight": "Uçuşu başlat",
   "finishFlight": "Uçuşu bitir",
